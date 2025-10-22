@@ -7,7 +7,7 @@
 
 ---
 
-## Task 1: Categories and Sample Foods (Person 1)
+## Task 1: Categories and Sample Foods (Person 1: Sonakshi)
 
 **Responsibility:** Create and populate CATEGORY and FOOD tables
 
@@ -63,7 +63,7 @@ INSERT INTO Belong_to (food_id, category_id) VALUES
 
 ---
 
-## Task 2: Nutrition Facts (Person 2)
+## Task 2: Nutrition Facts (Person 2: Dhruvina)
 
 **Responsibility:** Create and populate NUTRITION table and link to foods
 
@@ -108,7 +108,7 @@ INSERT INTO has_nutrition (food_id, nutrition_id) VALUES
 
 ---
 
-## Task 3: Sample Users and Food Logs (Person 3)
+## Task 3: Sample Users and Food Logs (Person 3: Manya)
 
 **Responsibility:** Create and populate USER table and FOOD_INFO table
 
@@ -154,7 +154,7 @@ INSERT INTO FOOD_INFO (user_id, food_id, log_date) VALUES
 
 ---
 
-## Task 4: SQL Queries (Person 4)
+## Task 4: SQL Queries (Person 4: Ashna)
 
 **Responsibility:** Create example SQL queries demonstrating the application
 
