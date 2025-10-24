@@ -258,8 +258,3 @@ INSERT INTO "USER" (username, email, registration_date)
 VALUES ('john_doe', 'john.doe@example.com', CURRENT_DATE);
 
 
--- Query 18: Delete a user and all their associated food logs (CASCADE)
--- Purpose: Remove a user account and all their data
--- WARNING: This will delete all food logs for this user due to CASCADE
-DELETE FROM "USER"
-WHERE username = 'john_doe';
