@@ -146,9 +146,16 @@ class Database:
                 cursor.execute(query)
             
             result = cursor.fetchone()
+            
+            # Commit if it's an INSERT/UPDATE/DELETE (even with RETURNING)
+            if query.strip().upper().startswith(('INSERT', 'UPDATE', 'DELETE')):
+                connection.commit()
+            
             return result
             
         except Error as e:
+            if connection:
+                connection.rollback()
             print(f"Database error: {e}")
             return None
             
