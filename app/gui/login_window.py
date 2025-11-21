@@ -1,16 +1,17 @@
 """
-Login/Register Window - Modern Design
-Beautiful GUI for user authentication
+Login/Register Window - Cross-Platform Design
+Works beautifully on both Mac and Windows
 """
 
 import tkinter as tk
 from tkinter import ttk, messagebox
 from app.auth import Auth
+import platform
 
 
 class LoginWindow:
     """
-    Modern Login and Registration Window
+    Cross-platform Login and Registration Window
     """
     
     def __init__(self, on_login_success):
@@ -19,10 +20,12 @@ class LoginWindow:
         
         Args:
             on_login_success: Callback function when login is successful
-                             Should accept user_data dict as parameter
         """
         self.on_login_success = on_login_success
         self.auth = Auth()
+        
+        # Detect OS for platform-specific adjustments
+        self.is_windows = platform.system() == "Windows"
         
         # Create main window
         self.root = tk.Tk()
@@ -53,14 +56,14 @@ class LoginWindow:
         main_frame = tk.Frame(self.root, bg="#ffffff")
         main_frame.pack(fill=tk.BOTH, expand=True)
         
-        # Left side - Branding section
+        # Left panel - Branding
         left_frame = tk.Frame(main_frame, bg="#4CAF50", width=450)
         left_frame.pack(side=tk.LEFT, fill=tk.BOTH)
         left_frame.pack_propagate(False)
         
         self.create_left_panel(left_frame)
         
-        # Right side - Form section
+        # Right panel - Forms
         right_frame = tk.Frame(main_frame, bg="#ffffff", width=450)
         right_frame.pack(side=tk.RIGHT, fill=tk.BOTH, expand=True)
         right_frame.pack_propagate(False)
@@ -72,11 +75,11 @@ class LoginWindow:
         container = tk.Frame(parent, bg="#4CAF50")
         container.place(relx=0.5, rely=0.5, anchor=tk.CENTER)
         
-        # Logo
+        # Logo - using text emoji works on all platforms
         logo = tk.Label(
             container,
             text="🥗",
-            font=("Arial", 120),
+            font=("Arial", 100, "bold"),
             bg="#4CAF50"
         )
         logo.pack(pady=(0, 20))
@@ -85,7 +88,7 @@ class LoginWindow:
         app_name = tk.Label(
             container,
             text="Nutrition Tracker",
-            font=("Arial", 32, "bold"),
+            font=("Arial", 28, "bold"),
             bg="#4CAF50",
             fg="white"
         )
@@ -95,50 +98,55 @@ class LoginWindow:
         tagline = tk.Label(
             container,
             text="Track your meals, achieve your goals",
-            font=("Arial", 14),
+            font=("Arial", 12),
             bg="#4CAF50",
             fg="#E8F5E9"
         )
-        tagline.pack(pady=(0, 40))
+        tagline.pack(pady=(0, 30))
         
-        # Features
+        # Features with unicode symbols (cross-platform compatible)
         features = [
-            "🍎 Search 1000+ foods",
-            "📊 Track daily nutrition",
-            "📈 View detailed reports",
-            "🎯 Set and achieve goals"
+            "• Search 1000+ foods",
+            "• Track daily nutrition", 
+            "• View detailed reports",
+            "• Set and achieve goals"
         ]
         
         for feature in features:
             feature_label = tk.Label(
                 container,
                 text=feature,
-                font=("Arial", 12),
+                font=("Arial", 11),
                 bg="#4CAF50",
                 fg="white",
-                anchor=tk.W
+                anchor=tk.W,
+                justify=tk.LEFT
             )
-            feature_label.pack(pady=5, padx=40)
+            feature_label.pack(pady=5, padx=40, anchor=tk.W)
     
     def create_right_panel(self, parent):
         """Create the right form panel"""
         container = tk.Frame(parent, bg="#ffffff")
         container.pack(fill=tk.BOTH, expand=True, padx=50, pady=40)
         
-        # Tab buttons
+        # Tab buttons with better styling
         tab_frame = tk.Frame(container, bg="#ffffff")
         tab_frame.pack(fill=tk.X, pady=(0, 30))
         
+        # Use Canvas for better button rendering on Windows
         self.login_tab_btn = tk.Button(
             tab_frame,
             text="Login",
-            font=("Arial", 14, "bold"),
+            font=("Arial", 13, "bold"),
             bg="#4CAF50",
             fg="white",
-            relief=tk.FLAT,
+            activebackground="#45a049",
+            activeforeground="white",
+            relief=tk.RAISED,
+            bd=0,
             cursor="hand2",
             command=self.show_login_form,
-            width=12,
+            width=13,
             height=2
         )
         self.login_tab_btn.pack(side=tk.LEFT, padx=(0, 10))
@@ -146,13 +154,16 @@ class LoginWindow:
         self.register_tab_btn = tk.Button(
             tab_frame,
             text="Register",
-            font=("Arial", 14),
-            bg="#f5f5f5",
+            font=("Arial", 13),
+            bg="#e8e8e8",
             fg="#666666",
-            relief=tk.FLAT,
+            activebackground="#d0d0d0",
+            activeforeground="#666666",
+            relief=tk.RAISED,
+            bd=0,
             cursor="hand2",
             command=self.show_register_form,
-            width=12,
+            width=13,
             height=2
         )
         self.register_tab_btn.pack(side=tk.LEFT)
@@ -168,65 +179,108 @@ class LoginWindow:
         # Show login by default
         self.show_login_form()
     
+    def create_styled_entry(self, parent, show_password=False):
+        """Create a styled entry widget with frame border"""
+        # Outer frame for border effect
+        frame = tk.Frame(parent, bg="#cccccc", bd=0)
+        frame.pack(fill=tk.X, pady=(0, 15))
+        
+        # Inner frame for padding
+        inner_frame = tk.Frame(frame, bg="#ffffff", bd=0)
+        inner_frame.pack(fill=tk.BOTH, expand=True, padx=1, pady=1)
+        
+        # Entry widget
+        entry = tk.Entry(
+            inner_frame,
+            font=("Arial", 11),
+            relief=tk.FLAT,
+            bg="#ffffff",
+            fg="#333333",
+            bd=0,
+            highlightthickness=0
+        )
+        entry.pack(fill=tk.BOTH, expand=True, padx=10, pady=12)
+        
+        if show_password:
+            entry.config(show="*")
+        
+        # Focus effects
+        def on_focus_in(e):
+            frame.config(bg="#4CAF50")
+        
+        def on_focus_out(e):
+            frame.config(bg="#cccccc")
+        
+        entry.bind('<FocusIn>', on_focus_in)
+        entry.bind('<FocusOut>', on_focus_out)
+        
+        return entry
+    
     def create_login_form(self, parent):
         """Create login form"""
         form = tk.Frame(parent, bg="#ffffff")
         
+        # Welcome message
         welcome = tk.Label(
             form,
-            text="Welcome Back! 👋",
-            font=("Arial", 24, "bold"),
+            text="Welcome Back!",
+            font=("Arial", 22, "bold"),
             bg="#ffffff",
             fg="#333333"
         )
-        welcome.pack(pady=(0, 10))
+        welcome.pack(pady=(0, 5))
         
         subtitle = tk.Label(
             form,
             text="Enter your credentials to continue",
-            font=("Arial", 11),
+            font=("Arial", 10),
             bg="#ffffff",
             fg="#999999"
         )
-        subtitle.pack(pady=(0, 40))
+        subtitle.pack(pady=(0, 30))
         
-        # Username
-        tk.Label(form, text="Username", font=("Arial", 11, "bold"), bg="#ffffff", fg="#333333", anchor=tk.W).pack(fill=tk.X, pady=(15, 5))
+        # Username field
+        tk.Label(
+            form,
+            text="Username",
+            font=("Arial", 10, "bold"),
+            bg="#ffffff",
+            fg="#333333",
+            anchor=tk.W
+        ).pack(fill=tk.X, pady=(10, 5))
         
-        username_frame = tk.Frame(form, bg="#e0e0e0", height=50)
-        username_frame.pack(fill=tk.X, pady=(0, 5))
-        username_frame.pack_propagate(False)
-        
-        self.login_username_entry = tk.Entry(username_frame, font=("Arial", 12), relief=tk.FLAT, bg="#ffffff", fg="#333333")
-        self.login_username_entry.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
+        self.login_username_entry = self.create_styled_entry(form)
         self.login_username_entry.bind('<Return>', lambda e: self.handle_login())
         
-        # Password
-        tk.Label(form, text="Password", font=("Arial", 11, "bold"), bg="#ffffff", fg="#333333", anchor=tk.W).pack(fill=tk.X, pady=(15, 5))
+        # Password field
+        tk.Label(
+            form,
+            text="Password",
+            font=("Arial", 10, "bold"),
+            bg="#ffffff",
+            fg="#333333",
+            anchor=tk.W
+        ).pack(fill=tk.X, pady=(10, 5))
         
-        password_frame = tk.Frame(form, bg="#e0e0e0", height=50)
-        password_frame.pack(fill=tk.X, pady=(0, 5))
-        password_frame.pack_propagate(False)
-        
-        self.login_password_entry = tk.Entry(password_frame, font=("Arial", 12), relief=tk.FLAT, bg="#ffffff", fg="#333333", show="●")
-        self.login_password_entry.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
+        self.login_password_entry = self.create_styled_entry(form, show_password=True)
         self.login_password_entry.bind('<Return>', lambda e: self.handle_login())
         
         # Login button
         login_btn = tk.Button(
             form,
-            text="Login →",
-            font=("Arial", 14, "bold"),
+            text="Login",
+            font=("Arial", 12, "bold"),
             bg="#4CAF50",
             fg="white",
-            relief=tk.FLAT,
+            activebackground="#45a049",
+            activeforeground="white",
+            relief=tk.RAISED,
+            bd=0,
             cursor="hand2",
             command=self.handle_login,
             height=2
         )
-        login_btn.pack(fill=tk.X, pady=(30, 0))
-        login_btn.bind('<Enter>', lambda e: login_btn.config(bg="#45a049"))
-        login_btn.bind('<Leave>', lambda e: login_btn.config(bg="#4CAF50"))
+        login_btn.pack(fill=tk.X, pady=(25, 0))
         
         return form
     
@@ -234,75 +288,89 @@ class LoginWindow:
         """Create registration form"""
         form = tk.Frame(parent, bg="#ffffff")
         
+        # Welcome message
         welcome = tk.Label(
             form,
-            text="Create Account 🚀",
-            font=("Arial", 24, "bold"),
+            text="Create Account",
+            font=("Arial", 22, "bold"),
             bg="#ffffff",
             fg="#333333"
         )
-        welcome.pack(pady=(0, 10))
+        welcome.pack(pady=(0, 5))
         
         subtitle = tk.Label(
             form,
             text="Join us to start tracking your nutrition",
-            font=("Arial", 11),
+            font=("Arial", 10),
             bg="#ffffff",
             fg="#999999"
         )
-        subtitle.pack(pady=(0, 30))
+        subtitle.pack(pady=(0, 25))
         
-        # Username
-        tk.Label(form, text="Username", font=("Arial", 11, "bold"), bg="#ffffff", fg="#333333", anchor=tk.W).pack(fill=tk.X, pady=(15, 5))
+        # Username field
+        tk.Label(
+            form,
+            text="Username",
+            font=("Arial", 10, "bold"),
+            bg="#ffffff",
+            fg="#333333",
+            anchor=tk.W
+        ).pack(fill=tk.X, pady=(5, 5))
         
-        username_frame = tk.Frame(form, bg="#e0e0e0", height=50)
-        username_frame.pack(fill=tk.X, pady=(0, 5))
-        username_frame.pack_propagate(False)
-        
-        self.register_username_entry = tk.Entry(username_frame, font=("Arial", 12), relief=tk.FLAT, bg="#ffffff", fg="#333333")
-        self.register_username_entry.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
+        self.register_username_entry = self.create_styled_entry(form)
         self.register_username_entry.bind('<Return>', lambda e: self.handle_register())
         
-        # Email
-        tk.Label(form, text="Email", font=("Arial", 11, "bold"), bg="#ffffff", fg="#333333", anchor=tk.W).pack(fill=tk.X, pady=(15, 5))
+        # Email field
+        tk.Label(
+            form,
+            text="Email",
+            font=("Arial", 10, "bold"),
+            bg="#ffffff",
+            fg="#333333",
+            anchor=tk.W
+        ).pack(fill=tk.X, pady=(5, 5))
         
-        email_frame = tk.Frame(form, bg="#e0e0e0", height=50)
-        email_frame.pack(fill=tk.X, pady=(0, 5))
-        email_frame.pack_propagate(False)
-        
-        self.register_email_entry = tk.Entry(email_frame, font=("Arial", 12), relief=tk.FLAT, bg="#ffffff", fg="#333333")
-        self.register_email_entry.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
+        self.register_email_entry = self.create_styled_entry(form)
         self.register_email_entry.bind('<Return>', lambda e: self.handle_register())
         
-        # Password
-        tk.Label(form, text="Password", font=("Arial", 11, "bold"), bg="#ffffff", fg="#333333", anchor=tk.W).pack(fill=tk.X, pady=(15, 5))
+        # Password field
+        tk.Label(
+            form,
+            text="Password",
+            font=("Arial", 10, "bold"),
+            bg="#ffffff",
+            fg="#333333",
+            anchor=tk.W
+        ).pack(fill=tk.X, pady=(5, 5))
         
-        password_frame = tk.Frame(form, bg="#e0e0e0", height=50)
-        password_frame.pack(fill=tk.X, pady=(0, 5))
-        password_frame.pack_propagate(False)
-        
-        self.register_password_entry = tk.Entry(password_frame, font=("Arial", 12), relief=tk.FLAT, bg="#ffffff", fg="#333333", show="●")
-        self.register_password_entry.pack(fill=tk.BOTH, expand=True, padx=2, pady=2)
+        self.register_password_entry = self.create_styled_entry(form, show_password=True)
         self.register_password_entry.bind('<Return>', lambda e: self.handle_register())
         
         # Hint
-        tk.Label(form, text="💡 Min 6 chars, use letters and numbers", font=("Arial", 9), bg="#ffffff", fg="#999999").pack(anchor=tk.W, pady=(5, 0))
+        tk.Label(
+            form,
+            text="Min 6 characters, include letters and numbers",
+            font=("Arial", 9),
+            bg="#ffffff",
+            fg="#999999"
+        ).pack(anchor=tk.W, pady=(0, 5))
         
         # Register button
         register_btn = tk.Button(
             form,
-            text="Create Account →",
-            font=("Arial", 14, "bold"),
+            text="Create Account",
+            font=("Arial", 12, "bold"),
             bg="#4CAF50",
             fg="white",
-            relief=tk.FLAT,
+            activebackground="#45a049",
+            activeforeground="white",
+            relief=tk.RAISED,
+            bd=0,
             cursor="hand2",
             command=self.handle_register,
             height=2
         )
-        register_btn.pack(fill=tk.X, pady=(20, 0))
-        register_btn.bind('<Enter>', lambda e: register_btn.config(bg="#45a049"))
-        register_btn.bind('<Leave>', lambda e: register_btn.config(bg="#4CAF50"))
+        register_btn.pack(fill=tk.X, pady=(15, 0))
         
         return form
     
@@ -310,15 +378,35 @@ class LoginWindow:
         """Show login form"""
         self.register_form.pack_forget()
         self.login_form.pack(fill=tk.BOTH, expand=True)
-        self.login_tab_btn.config(bg="#4CAF50", fg="white", font=("Arial", 14, "bold"))
-        self.register_tab_btn.config(bg="#f5f5f5", fg="#666666", font=("Arial", 14))
+        
+        # Update button styles
+        self.login_tab_btn.config(
+            bg="#4CAF50",
+            fg="white",
+            font=("Arial", 13, "bold")
+        )
+        self.register_tab_btn.config(
+            bg="#e8e8e8",
+            fg="#666666",
+            font=("Arial", 13)
+        )
     
     def show_register_form(self):
         """Show register form"""
         self.login_form.pack_forget()
         self.register_form.pack(fill=tk.BOTH, expand=True)
-        self.register_tab_btn.config(bg="#4CAF50", fg="white", font=("Arial", 14, "bold"))
-        self.login_tab_btn.config(bg="#f5f5f5", fg="#666666", font=("Arial", 14))
+        
+        # Update button styles
+        self.register_tab_btn.config(
+            bg="#4CAF50",
+            fg="white",
+            font=("Arial", 13, "bold")
+        )
+        self.login_tab_btn.config(
+            bg="#e8e8e8",
+            fg="#666666",
+            font=("Arial", 13)
+        )
     
     def handle_login(self):
         """Handle login"""
@@ -332,11 +420,11 @@ class LoginWindow:
         success, message, user_data = self.auth.login_user(username, password)
         
         if success:
-            messagebox.showinfo("✅ Success", f"Welcome back, {user_data['username']}!")
+            messagebox.showinfo("Success", f"Welcome back, {user_data['username']}!")
             self.root.destroy()
             self.on_login_success(user_data)
         else:
-            messagebox.showerror("❌ Login Failed", message)
+            messagebox.showerror("Login Failed", message)
             self.login_password_entry.delete(0, tk.END)
     
     def handle_register(self):
@@ -352,14 +440,14 @@ class LoginWindow:
         success, message = self.auth.register_user(username, email, password)
         
         if success:
-            messagebox.showinfo("✅ Success", f"Account created!\n\nWelcome {username}! You can now login.")
+            messagebox.showinfo("Success", f"Account created successfully!\n\nWelcome {username}! You can now login.")
             self.register_username_entry.delete(0, tk.END)
             self.register_email_entry.delete(0, tk.END)
             self.register_password_entry.delete(0, tk.END)
             self.show_login_form()
             self.login_username_entry.insert(0, username)
         else:
-            messagebox.showerror("❌ Registration Failed", message)
+            messagebox.showerror("Registration Failed", message)
     
     def run(self):
         """Run the login window"""
@@ -368,7 +456,7 @@ class LoginWindow:
 
 if __name__ == "__main__":
     def on_success(user_data):
-        print(f"✅ Login successful! User: {user_data['username']}")
+        print(f"Login successful! User: {user_data['username']}")
     
     login_window = LoginWindow(on_login_success=on_success)
     login_window.run()
