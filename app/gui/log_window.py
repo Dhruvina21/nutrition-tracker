@@ -37,9 +37,9 @@ def get_connection():
 
 
 # ---------------------------------------------------------------------
-# Log Window
+# Log Window (as a Frame, NOT a popup)
 # ---------------------------------------------------------------------
-class LogWindow(tk.Toplevel):
+class LogWindow(tk.Frame):
     """
     Phase 7: Food Logging System GUI.
 
@@ -58,15 +58,17 @@ class LogWindow(tk.Toplevel):
     """
 
     def __init__(self, master, user_id: int, username: str, *args, **kwargs):
-        super().__init__(master, *args, **kwargs)
+        super().__init__(master, bg="#f5f5f5", *args, **kwargs)
+
+        # make this frame fill the window
+        self.pack(fill=tk.BOTH, expand=True)
+
+        # main window properties (since this is a page, not popup)
+        master.title("Food Log - Nutrition Tracker")
+        master.minsize(900, 550)
 
         self.user_id = user_id
         self.username = username
-
-        self.title("Food Log - Nutrition Tracker")
-        self.geometry("1100x650")
-        self.minsize(900, 550)
-        self.configure(bg="#f5f5f5")
 
         # map "Apple" -> 1 etc.
         self.food_id_by_name: dict[str, int] = {}
@@ -76,9 +78,6 @@ class LogWindow(tk.Toplevel):
 
         # servings (number of servings, default 1)
         self.servings_var = tk.IntVar(value=1)
-
-        # mapping from tree item id -> {"food_id": ..., "log_date": ...}
-        self.row_meta: dict[str, dict] = {}
 
         # --- build UI ---
         self._build_top_bar()
@@ -203,13 +202,13 @@ class LogWindow(tk.Toplevel):
         )
         self.servings_spin.grid(row=0, column=5, padx=(0, 20), pady=10, sticky="w")
 
-        # Log button  (TEXT = BLACK)
+        # Log button (GREEN with BLACK text so it's visible)
         log_btn = tk.Button(
             form_frame,
             text="Log Food",
             font=("Arial", 11, "bold"),
             bg="#4CAF50",
-            fg="black",
+            fg="black",              # <- black text for visibility
             activebackground="#45a049",
             activeforeground="black",
             relief=tk.FLAT,
@@ -219,15 +218,14 @@ class LogWindow(tk.Toplevel):
         )
         log_btn.grid(row=0, column=6, padx=(0, 10), pady=10, sticky="we")
 
-        # Refresh button (TEXT = BLACK)
+        # Refresh button
         refresh_btn = tk.Button(
             form_frame,
             text="Refresh Logs",
             font=("Arial", 11),
             bg="#e0e0e0",
-            fg="black",
+            fg="#333333",
             activebackground="#d5d5d5",
-            activeforeground="black",
             relief=tk.FLAT,
             cursor="hand2",
             command=self._refresh_logs,
@@ -259,7 +257,7 @@ class LogWindow(tk.Toplevel):
     def _build_table(self, parent):
         table_frame = tk.LabelFrame(
             parent,
-            text=f" Logged Foods ",
+            text=" Logged Foods ",
             font=("Arial", 11, "bold"),
             bg="#ffffff",
             fg="#333333",
@@ -268,16 +266,16 @@ class LogWindow(tk.Toplevel):
         )
         table_frame.pack(fill=tk.BOTH, expand=True, pady=(0, 10))
 
+        self.table_title_var = tk.StringVar(
+            value=f"Logged Foods for {self.selected_date.get()}"
+        )
         top_label = tk.Label(
             table_frame,
-            textvariable=tk.StringVar(
-                value=f"Logged Foods for {self.selected_date.get()}"
-            ),
+            textvariable=self.table_title_var,
             font=("Arial", 10),
             bg="#ffffff",
             fg="#555555",
         )
-        # keep reference so we can update later
         self.table_title_label = top_label
         top_label.pack(anchor="w", padx=15, pady=(5, 0))
 
@@ -324,7 +322,7 @@ class LogWindow(tk.Toplevel):
         self.tree.configure(yscrollcommand=scrollbar.set)
         scrollbar.pack(side="right", fill="y", pady=10, padx=(0, 10))
 
-        # Delete button under the table (TEXT = BLACK)
+        # Delete button under the table
         btn_frame = tk.Frame(parent, bg="#f5f5f5")
         btn_frame.pack(fill=tk.X, pady=(0, 5))
 
@@ -333,9 +331,9 @@ class LogWindow(tk.Toplevel):
             text="Delete Selected Log",
             font=("Arial", 11),
             bg="#e53935",
-            fg="black",
+            fg="white",
             activebackground="#c62828",
-            activeforeground="black",
+            activeforeground="white",
             relief=tk.FLAT,
             cursor="hand2",
             command=self._delete_selected_log,
@@ -409,6 +407,7 @@ class LogWindow(tk.Toplevel):
     # ------------------------------------------------------------------
     def _load_food_options(self):
         """Load all foods into dropdown."""
+        conn = None
         try:
             conn = get_connection()
             cur = conn.cursor()
@@ -418,10 +417,8 @@ class LogWindow(tk.Toplevel):
             messagebox.showerror("Database Error", f"Failed to load foods:\n{e}")
             rows = []
         finally:
-            try:
+            if conn is not None:
                 conn.close()
-            except Exception:
-                pass
 
         names = []
         self.food_id_by_name.clear()
@@ -435,13 +432,14 @@ class LogWindow(tk.Toplevel):
 
     def _load_logs_for_date(self, log_date_str: str):
         """Load all logs for the given date and update table + totals."""
-        # clear table + meta
+        # clear table
         for row in self.tree.get_children():
             self.tree.delete(row)
-        self.row_meta = {}
 
         totals = {"calories": 0.0, "protein": 0.0, "fat": 0.0, "carbs": 0.0}
 
+        conn = None
+        rows = []
         try:
             conn = get_connection()
             cur = conn.cursor()
@@ -470,25 +468,28 @@ class LogWindow(tk.Toplevel):
             rows = cur.fetchall()
         except Exception as e:
             messagebox.showerror("Database Error", f"Failed to load logs:\n{e}")
-            rows = []
         finally:
-            try:
+            if conn is not None:
                 conn.close()
-            except Exception:
-                pass
 
-        for food_id, food_name, category, calories, protein, fat, carbs, log_date in rows:
-            item_id = self.tree.insert(
+        # insert rows; iid IS UNIQUE (uses index) to avoid duplicate error
+        for index, (
+            food_id,
+            food_name,
+            category,
+            calories,
+            protein,
+            fat,
+            carbs,
+            log_date,
+        ) in enumerate(rows):
+            iid = f"{food_id}_{log_date}_{index}"
+            self.tree.insert(
                 "",
                 "end",
+                iid=iid,
                 values=(food_name, category, calories, protein, fat, carbs, log_date),
             )
-
-            # remember which DB row this represents
-            self.row_meta[item_id] = {
-                "food_id": food_id,
-                "log_date": log_date,
-            }
 
             totals["calories"] += float(calories or 0)
             totals["protein"] += float(protein or 0)
@@ -512,9 +513,7 @@ class LogWindow(tk.Toplevel):
             self.summary_var.set("Moderate calorie day 👍")
 
         # update title above table
-        self.table_title_label.config(
-            text=f"Logged Foods for {self.selected_date.get()}"
-        )
+        self.table_title_var.set(f"Logged Foods for {self.selected_date.get()}")
 
     # ------------------------------------------------------------------
     # EVENT HANDLERS
@@ -547,6 +546,7 @@ class LogWindow(tk.Toplevel):
             servings = 1
         servings = max(1, min(servings, 5))
 
+        conn = None
         try:
             conn = get_connection()
             cur = conn.cursor()
@@ -563,10 +563,8 @@ class LogWindow(tk.Toplevel):
             messagebox.showerror("Database Error", f"Failed to log food:\n{e}")
             return
         finally:
-            try:
+            if conn is not None:
                 conn.close()
-            except Exception:
-                pass
 
         messagebox.showinfo(
             "Success",
@@ -590,14 +588,7 @@ class LogWindow(tk.Toplevel):
         item_id = selected[0]
         values = self.tree.item(item_id, "values")
         food_name = values[0]
-
-        meta = self.row_meta.get(item_id)
-        if not meta:
-            messagebox.showerror("Error", "Could not find row metadata.")
-            return
-
-        food_id = meta["food_id"]
-        log_date_str = meta["log_date"]
+        log_date_str = values[-1]
 
         if not messagebox.askyesno(
             "Confirm Delete",
@@ -605,6 +596,14 @@ class LogWindow(tk.Toplevel):
         ):
             return
 
+        try:
+            # iid format: "<food_id>_<date>_<index>"
+            food_id = int(item_id.split("_")[0])
+        except ValueError:
+            messagebox.showerror("Error", "Could not parse selected item id.")
+            return
+
+        conn = None
         try:
             conn = get_connection()
             cur = conn.cursor()
@@ -619,10 +618,8 @@ class LogWindow(tk.Toplevel):
             messagebox.showerror("Database Error", f"Failed to delete log:\n{e}")
             return
         finally:
-            try:
+            if conn is not None:
                 conn.close()
-            except Exception:
-                pass
 
         self._refresh_logs()
 
@@ -639,6 +636,7 @@ class LogWindow(tk.Toplevel):
         if log_date_str is None:
             log_date_str = date.today().strftime("%Y-%m-%d")
 
+        conn = None
         try:
             conn = get_connection()
             cur = conn.cursor()
@@ -654,10 +652,8 @@ class LogWindow(tk.Toplevel):
             )
             return
         finally:
-            try:
+            if conn is not None:
                 conn.close()
-            except Exception:
-                pass
 
         # refresh if we’re looking at that date
         if log_date_str == self.selected_date.get():
@@ -665,12 +661,10 @@ class LogWindow(tk.Toplevel):
 
 
 # ---------------------------------------------------------------------
-# Standalone testing
+# Standalone testing 
 # ---------------------------------------------------------------------
 if __name__ == "__main__":
     root = tk.Tk()
-    root.withdraw()  # hide root, we only show the Toplevel
-
-    # For testing, assume user_id=1, username="demo_user"
-    win = LogWindow(root, user_id=1, username="demo_user")
-    win.mainloop()
+    root.geometry("1100x650")
+    app = LogWindow(root, user_id=1, username="demo_user")
+    root.mainloop()
