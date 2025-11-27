@@ -248,6 +248,7 @@ class LogWindow(tk.Frame):
             width=80,
             font=("Arial", 9),
             bg="#fafafa",
+            fg="#333333",
         )
         self.notes_text.grid(
             row=1, column=1, columnspan=7, padx=(0, 15), pady=(0, 10), sticky="we"
@@ -334,7 +335,8 @@ class LogWindow(tk.Frame):
             fg="white",
             activebackground="#c62828",
             activeforeground="white",
-            relief=tk.FLAT,
+            relief=tk.RAISED,
+            bd=2,
             cursor="hand2",
             command=self._delete_selected_log,
             height=1,
@@ -610,7 +612,7 @@ class LogWindow(tk.Frame):
             cur.execute(
                 "DELETE FROM FOOD_INFO "
                 "WHERE user_id = %s AND food_id = %s AND log_date = %s "
-                "LIMIT 1;",
+                ";",
                 (self.user_id, food_id, log_date_str),
             )
             conn.commit()
