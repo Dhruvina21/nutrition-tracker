@@ -2,6 +2,10 @@ import tkinter as tk
 from tkinter import messagebox
 from datetime import datetime
 from app.database import Database
+from app.gui.search_window import SearchWindow
+from app.gui.log_window import LogWindow
+from app.gui.search_window import SearchWindow
+from app.gui.log_window import LogWindow
 
 
 class MainWindow:
@@ -528,30 +532,21 @@ class MainWindow:
     
     def logout(self):
         """Logout user"""
-        if messagebox.askyesno("Logout", "Are you sure you want to logout?"):
-            self.root.destroy()
-    
-    # Quick action functions
     def quick_search(self):
-        """Quick food search"""
-        messagebox.showinfo(
-            "Quick Search",
-            "Quick Food Search will be implemented in Phase 6!"
-        )
+        """Quick food search - opens search window"""
+        SearchWindow(database=self.db, user_data=self.user_data)
     
     def quick_log(self):
-        """Quick log a meal"""
-        messagebox.showinfo(
-            "Log Meal",
-            "Log Meal feature will be implemented in Phase 7!"
-        )
+        """Quick log a meal - opens log window"""
+        log_win = tk.Toplevel(self.root)
+        log_win.title("Food Log")
+        LogWindow(log_win, user_id=self.user_data['user_id'], username=self.user_data['username'])
     
     def view_today(self):
         """View today's food log"""
-        messagebox.showinfo(
-            "Today's Log",
-            "Today's Log viewer will be implemented in Phase 7!"
-        )
+        self.quick_log()
+
+    
     
     def view_weekly(self):
         """View weekly summary"""
