@@ -6,6 +6,8 @@ from app.gui.search_window import SearchWindow
 from app.gui.log_window import LogWindow
 from app.gui.search_window import SearchWindow
 from app.gui.log_window import LogWindow
+from app.gui.profile_window import ProfileWindow
+
 
 
 class MainWindow:
@@ -523,12 +525,7 @@ class MainWindow:
     
     def view_profile(self):
         """View user profile"""
-        profile_info = (
-            f"Username: {self.user_data['username']}\n"
-            f"Email: {self.user_data['email']}\n"
-            f"Member since: {self.user_data['registration_date']}"
-        )
-        messagebox.showinfo("Profile", profile_info)
+        ProfileWindow(user_data=self.user_data).run()
     
     def logout(self):
         """Logout user"""
