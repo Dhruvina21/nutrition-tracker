@@ -172,7 +172,8 @@ class SearchWindow:
             search_frame,
             font=("Arial", 16),
             relief=tk.FLAT,
-            bg="#ffffff"
+            bg="#ffffff",
+            fg="#333333"
         )
         self.search_entry.pack(fill=tk.X, padx=3, pady=3, ipady=8)
         self.search_entry.bind('<Return>', lambda e: self.perform_search())
