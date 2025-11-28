@@ -184,9 +184,9 @@ class ReportWindow:
         
         tk.Button(
             date_frame,
-            text="📅 Load Report",
+            text="📊 View Daily Report",
             font=("Arial", 11, "bold"),
-            bg="#4CAF50",
+            bg="#2196F3",
             fg="white",
             relief=tk.FLAT,
             cursor="hand2",
