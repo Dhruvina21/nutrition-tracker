@@ -7,6 +7,9 @@ from app.gui.log_window import LogWindow
 from app.gui.search_window import SearchWindow
 from app.gui.log_window import LogWindow
 from app.gui.profile_window import ProfileWindow
+from app.gui.report_window import ReportWindow
+
+
 
 
 
@@ -504,24 +507,17 @@ class MainWindow:
     
     def search_foods(self):
         """Open food search window"""
-        messagebox.showinfo(
-            "Coming Soon",
-            "Food Search feature will be implemented in Phase 6!"
-        )
+        SearchWindow(database=self.db, user_data=self.user_data)
     
     def log_food(self):
         """Open food logging window"""
-        messagebox.showinfo(
-            "Coming Soon",
-            "Food Logging feature will be implemented in Phase 7!"
-        )
+        log_win = tk.Toplevel(self.root)
+        log_win.title("Food Log")
+        LogWindow(log_win, user_id=self.user_data['user_id'], username=self.user_data['username'])
     
     def view_reports(self):
         """Open reports window"""
-        messagebox.showinfo(
-            "Coming Soon",
-            "Reports feature will be implemented in Phase 8!"
-        )
+        ReportWindow(database=self.db, user_data=self.user_data).run()
     
     def view_profile(self):
         """View user profile"""
@@ -546,11 +542,8 @@ class MainWindow:
     
     
     def view_weekly(self):
-        """View weekly summary"""
-        messagebox.showinfo(
-            "Weekly Summary",
-            "Weekly Summary will be implemented in Phase 8!"
-        )
+        """View weekly summary - opens reports window"""
+        ReportWindow(database=self.db, user_data=self.user_data).run()
     
     def run(self):
         """Run the main window"""
